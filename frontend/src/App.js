@@ -1,15 +1,13 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import StudyPage from './components/StudyPage';
-// Import your components here
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import HomePage from './components/HomePage'; 
 
 function App() {
   return (
     <Router>
-      <Switch>
-        <Route path="/" exact component={HomePage} />
-        <Route path="/studies" component={StudyPage} />
-      </Switch>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+      </Routes>
     </Router>
   );
 }

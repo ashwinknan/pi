@@ -1,33 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Snackbar from '@mui/material/Snackbar';
+import StudyCard from './StudyCard'; // Adjust the path as needed
 import './HomePage.css';
 
-// Component for individual study card
-const StudyCard = ({ study }) => (
-    <Card variant="outlined" className="study-card">
-      <CardContent>
-        <Typography variant="h5" component="h2">
-          {study.name}
-        </Typography>
-        <Typography color="textSecondary">
-          {study.description}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
-  
-
-// HomePage component
 const HomePage = () => {
   const [studies, setStudies] = useState([]);
+  const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -35,96 +19,80 @@ const HomePage = () => {
     created_at: '',
   });
   const [error, setError] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
-    axios.get('/api/studies')
+    axios.get('http://localhost:3001/studies')
       .then(response => setStudies(response.data))
       .catch(error => setError('Error fetching studies'));
   }, []);
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  //const handleInputChange = (event) => {
+    //const { name, value } = event.target;
+    //setFormData({ ...formData, [name]: value });
+  //};
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    axios.post('/api/studies', formData)
+    axios.post('http://localhost:3001/studies', formData)
       .then(response => {
-        setStudies([...studies, response.data]);
+        setStudies(prevStudies => [...prevStudies, response.data]);
+        setShowForm(false);
         setFormData({
           name: '',
           description: '',
           participant_type: '',
           created_at: '',
         });
+        setError(''); // Clear any errors
       })
-      .catch(error => setError('Error creating study'));
+      .catch(error => {
+        setError('Error creating study');
+      });
+  };
+
+  const handleDeleteConfirm = (studyId) => {
+    axios.delete(`http://localhost:3001/studies/${studyId}`)
+      .then(() => {
+        setStudies(studies.filter(study => study.id !== studyId));
+        setOpenSnackbar(true);
+        setError(''); // Clear any errors
+      })
+      .catch(error => {
+        setError('Error deleting study');
+      });
   };
 
   return (
     <Container className="homepage">
       <Typography variant="h4" component="h1" gutterBottom>
-        Studies
+        Welcome!
       </Typography>
-      <Grid container spacing={2}>
-        {studies.map(study => (
-          <Grid item key={study.id} xs={12} sm={6} md={4}>
-            <StudyCard study={study} />
-          </Grid>
-        ))}
-      </Grid>
-      <Box component="form" className="new-study-form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          label="Study Name"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-          variant="outlined"
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          label="Description"
-          name="description"
-          value={formData.description}
-          onChange={handleInputChange}
-          multiline
-          rows={4}
-          variant="outlined"
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          label="Participant Type"
-          name="participant_type"
-          value={formData.participant_type}
-          onChange={handleInputChange}
-          variant="outlined"
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          type="date"
-          name="created_at"
-          value={formData.created_at}
-          onChange={handleInputChange}
-          variant="outlined"
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+      {!showForm && (
+        <Button variant="contained" onClick={() => setShowForm(true)} sx={{ mb: 2 }}>
           Create New Study
         </Button>
-      </Box>
+      )}
+      {!showForm ? (
+        <Grid container spacing={2}>
+          {studies.map(study => (
+            <Grid item key={study.id} xs={12} sm={6} md={4}>
+              <StudyCard study={study} onDeleteConfirm={handleDeleteConfirm} />
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Box component="form" className="new-study-form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          {/* ... form fields ... */}
+        </Box>
+      )}
       {error && <Typography color="error">{error}</Typography>}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setOpenSnackbar(false)}
+        message="Study deleted successfully"
+      />
     </Container>
   );
 };
