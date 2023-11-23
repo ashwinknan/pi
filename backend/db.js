@@ -7,6 +7,9 @@ const pool = new Pool({
   database: dbConfig.database,
   password: dbConfig.password,
   port: 5432, // Default PostgreSQL port
+  ssl: {
+    rejectUnauthorized: false, // For development purposes, you might need to set this to false
+  }
 });
 
 module.exports = pool;
