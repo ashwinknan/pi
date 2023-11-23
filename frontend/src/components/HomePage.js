@@ -1,14 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './HomePage.css'; // Your CSS file for styles
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import './HomePage.css';
 
 // Component for individual study card
 const StudyCard = ({ study }) => (
-  <div className="study-card">
-    <h3>{study.name}</h3>
-    <p>{study.description}</p>
-  </div>
-);
+    <Card variant="outlined" className="study-card">
+      <CardContent>
+        <Typography variant="h5" component="h2">
+          {study.name}
+        </Typography>
+        <Typography color="textSecondary">
+          {study.description}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+  
 
 // HomePage component
 const HomePage = () => {
@@ -48,21 +63,69 @@ const HomePage = () => {
   };
 
   return (
-    <div className="homepage">
-      <h1>Studies</h1>
-      <div className="study-cards-container">
-        {studies.map(study => <StudyCard key={study.id} study={study} />)}
-      </div>
-      <form className="new-study-form" onSubmit={handleSubmit}>
-        {/* Form fields here */}
-        <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
-        <textarea name="description" value={formData.description} onChange={handleInputChange} required />
-        <input type="text" name="participant_type" value={formData.participant_type} onChange={handleInputChange} required />
-        <input type="date" name="created_at" value={formData.created_at} onChange={handleInputChange} required />
-        <button type="submit">Create New Study</button>
-      </form>
-      {error && <p className="error">{error}</p>}
-    </div>
+    <Container className="homepage">
+      <Typography variant="h4" component="h1" gutterBottom>
+        Studies
+      </Typography>
+      <Grid container spacing={2}>
+        {studies.map(study => (
+          <Grid item key={study.id} xs={12} sm={6} md={4}>
+            <StudyCard study={study} />
+          </Grid>
+        ))}
+      </Grid>
+      <Box component="form" className="new-study-form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          label="Study Name"
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
+          variant="outlined"
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          label="Description"
+          name="description"
+          value={formData.description}
+          onChange={handleInputChange}
+          multiline
+          rows={4}
+          variant="outlined"
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          label="Participant Type"
+          name="participant_type"
+          value={formData.participant_type}
+          onChange={handleInputChange}
+          variant="outlined"
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          type="date"
+          name="created_at"
+          value={formData.created_at}
+          onChange={handleInputChange}
+          variant="outlined"
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+          Create New Study
+        </Button>
+      </Box>
+      {error && <Typography color="error">{error}</Typography>}
+    </Container>
   );
 };
 
